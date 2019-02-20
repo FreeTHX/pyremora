@@ -28,7 +28,8 @@ setup(
     # For a list of valid classifiers, see https://pypi.org/classifiers/
     classifiers=[  
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Home Assistant Developers',
+        'Intended Audience :: Developers',
+        'Topic :: Home Automation',
         'License :: OSI Approved :: Apache License Version 2.0',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
