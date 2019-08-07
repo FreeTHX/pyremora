@@ -85,12 +85,12 @@ class RemoraDevice:
         return setfpX.json()['response'] == 0
 
     def setRelais(self, state: RelaisEtat):
-        setfpX = requests.get(self.baseurl + '?relais=' + state.value)
-        return setfpX.json()['response'] == 0
+        setr = requests.get(self.baseurl + '?relais=' + str(state.value))
+        return setr.json()['response'] == 0
 
     def setFnctRelais(self, mode: RelaisMode):
-        setfpX = requests.get(self.baseurl + '?frelais=' + mode.value)
-        return setfpX.json()['response'] == 0
+        setfr = requests.get(self.baseurl + '?frelais=' + str(mode.value))
+        return setfr.json()['response'] == 0
 
     def reset(self):
         try:
