@@ -95,7 +95,7 @@ class RemoraDevice:
         async with aiohttp.request('GET', self.baseurl, params = { 'frelais' : str(mode.value) }) as setfr:
             return (await setfr.json())['response'] == 0
 
-    async def reset(self):
+    async def reset(self) -> bool:
         try:
             async with aiohttp.request('GET', self.baseurl + 'reset', timeout=aiohttp.ClientTimeout(total=3)):
                 return True
@@ -103,7 +103,7 @@ class RemoraDevice:
             pass
         return True
 
-    async def factoryReset(self, areYouSure):
+    async def factoryReset(self, areYouSure) -> bool:
         if( areYouSure == True ):
             try:
                 async with aiohttp.request('GET', self.baseurl + 'factory_reset', timeout=aiohttp.ClientTimeout(total=3)):
