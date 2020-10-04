@@ -39,7 +39,7 @@ class RemoraDevice:
 
     def getTeleInfoEtiquette(self, etiquette: str):
         tinfoEtiquette = requests.get(self.baseurl + etiquette)
-        if tinfoEtiquette.status_code == requests.codes.not_found:
+        if tinfoEtiquette.status_code == 404:
             return None
         return tinfoEtiquette.json()[etiquette]
 
@@ -62,7 +62,7 @@ class RemoraDevice:
     
     def getFilPilote(self, num: int):
         fpX = requests.get(self.baseurl + 'fp' + str(num))
-        if fpX.status_code == requests.codes.not_found:
+        if fpX.status_code == 404:
             return None
         return FpMode(fpX.json()['fp'+ str(num)])
 
