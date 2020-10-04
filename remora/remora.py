@@ -76,7 +76,6 @@ class RemoraDevice:
                 cmd += m.upper()
             else:
                 cmd += '-'
-        print(cmd)
         fp = requests.get(self.baseurl + '?fp=' + cmd)
         return fp.json()['response'] == 0
 
@@ -94,7 +93,7 @@ class RemoraDevice:
 
     def reset(self):
         try:
-            reset = requests.get(self.baseurl + 'reset', timeout=3)
+            requests.get(self.baseurl + 'reset', timeout=3)
         except requests.exceptions.Timeout:
             pass
         return True
@@ -102,7 +101,7 @@ class RemoraDevice:
     def factoryReset(self, areYouSure):
         if( areYouSure == True ):
             try:
-                reset = requests.get(self.baseurl + 'factory_reset', timeout=3)
+                requests.get(self.baseurl + 'factory_reset', timeout=3)
             except requests.exceptions.Timeout:
                 pass
             return True
