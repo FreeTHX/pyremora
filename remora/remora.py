@@ -1,4 +1,5 @@
-import requests
+import aiohttp
+import asyncio
 from enum import Enum
 
 
@@ -29,44 +30,47 @@ class RemoraDevice:
     def __init__(self,host):
         self.baseurl = 'http://' + host + '/'
 
-    def getUptime(self):
-        uptime = requests.get(self.baseurl + 'uptime')
-        return uptime.json()['uptime']
+    async def getUptime(self) -> str:
+        async with aiohttp.request('GET', self.baseurl + 'uptime') as uptime:
+            # uptime return an invalid content_type (text/json)
+            return (await uptime.json(content_type=None))['uptime']
 
-    def getTeleInfo(self):
-        tinfo = requests.get(self.baseurl + 'tinfo')
-        return tinfo.json()
+    async def getTeleInfo(self) -> dict:
+        async with aiohttp.request('GET', self.baseurl + 'tinfo') as tinfo:
+            return (await tinfo.json())
 
-    def getTeleInfoEtiquette(self, etiquette: str):
-        tinfoEtiquette = requests.get(self.baseurl + etiquette)
-        if tinfoEtiquette.status_code == 404:
-            return None
-        return tinfoEtiquette.json()[etiquette]
+    async def getTeleInfoEtiquette(self, etiquette: str) -> str:
+        async with aiohttp.request('GET', self.baseurl + etiquette) as tinfoEtiquette:
+            if tinfoEtiquette.status == 404:
+                return None
+            return (await tinfoEtiquette.json())[etiquette]
 
-    def getRelais(self):
-        relais = requests.get(self.baseurl + 'relais')
-        return { 'relais'      : RelaisEtat(relais.json()['relais']),
-                 'fnct_relais' : RelaisMode( relais.json()['fnct_relais']) }
+    async def getRelais(self) -> dict:
+        async with aiohttp.request('GET', self.baseurl + 'relais') as relais:
+            rjson = await relais.json()
+            return { 
+                'relais'      : RelaisEtat(rjson['relais']),
+                'fnct_relais' : RelaisMode( rjson['fnct_relais']) }
 
-    def getDelestage(self):
-        delestage = requests.get(self.baseurl + 'delestage')
-        return delestage.json()
+    async def getDelestage(self) -> dict:
+        async with aiohttp.request('GET', self.baseurl + 'delestage') as delestage:
+            return (await delestage.json())
 
-    def getAllFilPilote(self):
-        fp = requests.get(self.baseurl +  'fp')
-        fpjson = fp.json()
-        fpresult = {}
-        for k, v in fpjson.items():
-            fpresult[k] = FpMode(v)
-        return fpresult
+    async def getAllFilPilote(self) -> dict:
+        async with aiohttp.request('GET', self.baseurl + 'fp') as fp:
+            fpjson = await fp.json()
+            fpresult = {}
+            for k, v in fpjson.items():
+                fpresult[k] = FpMode(v)
+            return fpresult
     
-    def getFilPilote(self, num: int):
-        fpX = requests.get(self.baseurl + 'fp' + str(num))
-        if fpX.status_code == 404:
-            return None
-        return FpMode(fpX.json()['fp'+ str(num)])
+    async def getFilPilote(self, num: int) -> str:
+        async with aiohttp.request('GET', self.baseurl + 'fp' + str(num)) as fpX:
+            if fpX.status_code == 404:
+                return None
+            return (await FpMode(fpX.json())['fp'+ str(num)])
 
-    def setAllFilPilote(self, listMode):
+    async def setAllFilPilote(self, listMode) -> bool:
         cmd = ''
         for m in listMode:
             if isinstance(m, FpMode):
@@ -76,33 +80,35 @@ class RemoraDevice:
                 cmd += m.upper()
             else:
                 cmd += '-'
-        fp = requests.get(self.baseurl + '?fp=' + cmd)
-        return fp.json()['response'] == 0
+        async with aiohttp.request('GET', self.baseurl, params = { 'fp' : cmd }) as fp:
+            return (await fp.json())['response'] == 0
 
-    def setFilPilote(self, num: int, mode: FpMode):
-        setfpX = requests.get(self.baseurl + '?setfp=' + str(num) + mode.value)
-        return setfpX.json()['response'] == 0
+    async def setFilPilote(self, num: int, mode: FpMode) -> bool:
+        async with aiohttp.request('GET', self.baseurl, params = { 'setfp' : str(num) + mode.value }) as setfpX:
+            return (await setfpX.json())['response'] == 0
 
-    def setRelais(self, state: RelaisEtat):
-        setr = requests.get(self.baseurl + '?relais=' + str(state.value))
-        return setr.json()['response'] == 0
+    async def setRelais(self, state: RelaisEtat) -> bool:
+        async with aiohttp.request('GET', self.baseurl, params = { 'relais' : str(state.value) }) as setr:
+            return (await setr.json())['response'] == 0
 
-    def setFnctRelais(self, mode: RelaisMode):
-        setfr = requests.get(self.baseurl + '?frelais=' + str(mode.value))
-        return setfr.json()['response'] == 0
+    async def setFnctRelais(self, mode: RelaisMode) -> bool:
+        async with aiohttp.request('GET', self.baseurl, params = { 'frelais' : str(mode.value) }) as setfr:
+            return (await setfr.json())['response'] == 0
 
-    def reset(self):
+    async def reset(self):
         try:
-            requests.get(self.baseurl + 'reset', timeout=3)
-        except requests.exceptions.Timeout:
+            async with aiohttp.request('GET', self.baseurl + 'reset', timeout=aiohttp.ClientTimeout(total=3)):
+                return True
+        except (aiohttp.ServerTimeoutError, aiohttp.client_exceptions.ClientOSError, asyncio.TimeoutError):
             pass
         return True
 
-    def factoryReset(self, areYouSure):
+    async def factoryReset(self, areYouSure):
         if( areYouSure == True ):
             try:
-                requests.get(self.baseurl + 'factory_reset', timeout=3)
-            except requests.exceptions.Timeout:
+                async with aiohttp.request('GET', self.baseurl + 'factory_reset', timeout=aiohttp.ClientTimeout(total=3)):
+                    return True
+            except (aiohttp.ServerTimeoutError, aiohttp.client_exceptions.ClientOSError, asyncio.TimeoutError):
                 pass
             return True
         else:

@@ -15,7 +15,7 @@ DESCRIPTION='A Python library to use the Remora API (Fil Pilote)'
 URL='https://github.com/FreeTHX/pyremora'
 AUTHOR='FreeTHX'
 AUTHOR_EMAIL='freethx.dev@gmail.com'
-REQUIRED = ['requests']
+REQUIRED = ['aiohttp']
 
 here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
@@ -42,11 +42,7 @@ setup(
         'Topic :: Home Automation',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.7'
     ],
 
     keywords='remora fil pilote',
