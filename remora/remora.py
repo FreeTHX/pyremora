@@ -45,6 +45,9 @@ class RemoraDevice:
 
     async def getTeleInfo(self) -> dict:
         async with aiohttp.request('GET', self.baseurl + 'tinfo') as tinfo:
+            # TELEINFO is not a mandatory, so this method could return None
+            if tinfo.status == 404:
+                return None
             return (await tinfo.json())
 
     async def getTeleInfoEtiquette(self, etiquette: str) -> str:
