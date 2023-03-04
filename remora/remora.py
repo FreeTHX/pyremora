@@ -35,6 +35,14 @@ class RemoraDevice:
             # uptime return an invalid content_type (text/json)
             return (await uptime.json(content_type=None))['uptime']
 
+    async def getHeartBeat(self) -> bool:
+        async with aiohttp.request('GET', self.baseurl + 'hb.htm') as hb:
+            return (hb.status == 200)
+
+    async def getSystemInfo(self) -> bool:
+        async with aiohttp.request('GET', self.baseurl + 'system.json') as systemInfo:
+            return (await systemInfo.json())
+
     async def getTeleInfo(self) -> dict:
         async with aiohttp.request('GET', self.baseurl + 'tinfo') as tinfo:
             return (await tinfo.json())
